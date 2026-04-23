@@ -35,23 +35,16 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    // Fix for CS7036: Provide the required 'Url' parameter for ScalarServer constructor.
-    // Fix for IDE0090: Simplify 'new' expression.
-
-    if (app.Environment.IsDevelopment())
+    app.MapScalarApiReference(options =>
     {
-        app.MapOpenApi();
-        app.MapScalarApiReference(options =>
-        {
-            options.WithTitle("Infinite Quiz API")
-                   .WithTheme(ScalarTheme.Moon)
-                   .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
-                   .Servers = new List<ScalarServer>
-                   {
+        options.WithTitle("Infinite Quiz API")
+               .WithTheme(ScalarTheme.Moon)
+               .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+               .Servers = new List<ScalarServer>
+               {
                        new("https://infinite-quiz-api-dmftbwedgafgbcfh.canadacentral-01.azurewebsites.net", null)
-                   };
-        });
-    }
+               };
+    });
 }
 app.UseRouting();
 app.UseCors("AllowFrontend");
