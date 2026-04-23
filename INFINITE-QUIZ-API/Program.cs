@@ -3,7 +3,7 @@ using Scalar.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using INFINITE_QUIZ_API.DataProvider;
 using INFINITE_QUIZ_API.Services.Interface;
-using INFINITE_QUIZ_API.Services.Services; // Add this using directive for UseSqlServer extension method
+using INFINITE_QUIZ_API.Services.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,14 +22,12 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod());
 });
 
-
 // Add services to the container.
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddOpenApi();
 builder.Services.AddDbContext<QUIZDBContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))); // Ensure UseSqlServer is resolved
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
@@ -37,9 +35,24 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference();
-}
+    // Fix for CS7036: Provide the required 'Url' parameter for ScalarServer constructor.
+    // Fix for IDE0090: Simplify 'new' expression.
 
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+        app.MapScalarApiReference(options =>
+        {
+            options.WithTitle("Infinite Quiz API")
+                   .WithTheme(ScalarTheme.Moon)
+                   .WithDefaultHttpClient(ScalarTarget.CSharp, ScalarClient.HttpClient)
+                   .Servers = new List<ScalarServer>
+                   {
+                       new("https://infinite-quiz-api-dmftbwedgafgbcfh.canadacentral-01.azurewebsites.net", null)
+                   };
+        });
+    }
+}
 app.UseRouting();
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
